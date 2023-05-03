@@ -4,7 +4,6 @@ import MessageList from "./components/MessageList";
 import Message from "./components/Message";
 import MessageSender from "./components/MessageSender";
 import axios from "axios";
-//import { io, Socket } from "socket.io-client";
 import {
   useEventSource,
   useEventSourceListener,
@@ -18,8 +17,6 @@ const API_ENDPOINT = "http://localhost:4000";
 const sendNewMessage = async (message: Message): Promise<Message[]> => {
   await axios.post(`${API_ENDPOINT}/chat`, message, {
     withCredentials: true,
-    // withCredentials : true,  allow you to set a cookie value in this origin domain as a response from another domain
-    // without u cannot set a cookie value as a response from t.ex a fech to another url.
   });
 
   return getMessages();
@@ -56,18 +53,11 @@ function App() {
     `${API_ENDPOINT}/sse`,
     true
   );
-  // vi har anvent en react library som hjälper oss att få eventSource lite mer hanterligt
-  // i useEventSource vi anger url där functionen ska koppla sig, och true är till för credentials, som är för att det ska funka med cors, cockies osv
-
-  // den function nedan är vår lyssnare som uppdaterar saker och thing åt oss
 
   useEventSourceListener(
     eventSource,
     ["message", "messages"],
-    // message är en default sträng som tar emot server-sent-event data
     (evt) => {
-      /// console.log("got event of type", evt.type);
-      // en callback som vi anropar när vi får ett meddelande från server
       if (evt.type === "message") {
         const message = JSON.parse(evt.data) as Message;
         console.log("got message", message);
@@ -77,7 +67,7 @@ function App() {
         });
       } else if (evt.type === "messages") {
         const messages = JSON.parse(evt.data) as Message[];
-        console.log(evt.type, messages);
+        console.log("all messages ", messages);
         dispatch({
           type: "replace",
           messages: messages,
@@ -85,13 +75,11 @@ function App() {
       }
     },
     [dispatch]
-    // dispach anrop så den vet vad man ska beroende
   );
 
   const sendMessage = (message: Message) => {
     console.log("send message", message);
     sendNewMessage(message);
-    // glöm inte bort withCredentials: true
   };
 
   return (
